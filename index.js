@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
+const admin = require("firebase-admin");
+
+
 
 const app = express();
 app.use(cors());
@@ -9,6 +12,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 //const port = 8000
 const password = "hotel";
+
+// Firebase admin
+
+
+
+var serviceAccount = require("./course-booking-5392b-firebase-adminsdk-zitii-8a0517d82e.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://course-booking.firebaseio.com'
+});
+
+
+
 
 const { MongoClient } = require("mongodb");
 const uri =
@@ -30,10 +47,37 @@ client.connect((err) => {
   });
   // data show in ui from mongDb
   app.get("/bookingShow", (req, res) => {
-    console.log(req.headers.authorization);
-    collection.find({email: req.query.email}).toArray((err, documents) => {
-      res.send(documents);
-    });
+    const bearer = req.headers.authorization;
+    if (bearer && bearer.startsWith('Bearer ')) {
+      const idToken = bearer.split(' ')[1];
+
+      admin.auth().verifyIdToken(idToken)
+        .then(function (decodedToken) {
+          const tokenEmail = decodedToken.email;
+          const queryEmail = req.query.email;
+          if (tokenEmail == queryEmail) {
+            collection.find({ email: req.query.email }).toArray((err, documents) => {
+              res.status(200).send(documents);
+            });
+          }
+          else{
+            res.status(401).send("Unauthorized Access")
+          }
+        })
+        .catch((error) => {
+          // Handle error
+        });
+
+    }
+    else{
+      res.status(401).send("Unauthorized Access")
+    }
+
+
+
+
+
+
   });
 });
 
