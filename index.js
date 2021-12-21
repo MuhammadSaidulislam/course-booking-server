@@ -20,14 +20,20 @@ const client = new MongoClient(uri, {
 client.connect((err) => {
   const collection = client.db("Hotel_Booking").collection("hotelBooking");
   // data send to mongodb from ui
-  app.post('/addBooking', (req, res) => {
+  app.post("/addBooking", (req, res) => {
     const newBooking = req.body;
-    collection.insertOne(newBooking)
-    .then(result => {
+    collection.insertOne(newBooking).then((result) => {
       res.send(result.insertedCount > 0);
       // res.redirect("/");
     });
     console.log(newBooking);
+  });
+  // data show in ui from mongDb
+  app.get("/bookingShow", (req, res) => {
+    console.log(req.headers.authorization);
+    collection.find({email: req.query.email}).toArray((err, documents) => {
+      res.send(documents);
+    });
   });
 });
 
