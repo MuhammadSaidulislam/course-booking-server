@@ -3,8 +3,8 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const ObjectId = require("mongodb").ObjectId;
 const admin = require("firebase-admin");
-
-
+require('dotenv').config()
+console.log(process.env.DB_PASS);
 
 const app = express();
 app.use(cors());
@@ -14,22 +14,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 const password = "hotel";
 
 // Firebase admin
-
-
-
 var serviceAccount = require("./course-booking-5392b-firebase-adminsdk-zitii-8a0517d82e.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://course-booking.firebaseio.com'
+  databaseURL: process.env.FIREBASE_DB
 });
 
 
 
 
 const { MongoClient } = require("mongodb");
-const uri =
-  "mongodb+srv://hotel:hotel@cluster0.npcff.mongodb.net/Hotel_Booking?retryWrites=true&w=majority";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.npcff.mongodb.net/Hotel_Booking?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -72,11 +68,6 @@ client.connect((err) => {
     else{
       res.status(401).send("Unauthorized Access")
     }
-
-
-
-
-
 
   });
 });
